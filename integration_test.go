@@ -18,7 +18,7 @@ func TestCase1(t *testing.T) {
 		t.Fatalf("Cannot start the process: %v", err)
 	}
 
-	if err := Expect(HelloEvent, "0"); err != nil {
+	if _, _, err := Expect(HelloEvent, "0"); err != nil {
 		t.Fatal(err)
 	}
 	log.Println("HelloEvent")
@@ -28,7 +28,7 @@ func TestCase1(t *testing.T) {
 		}
 		log.Println("Event skipped")
 	}
-	if err := Expect(HelloEvent, "6"); err != nil {
+	if _, _, err := Expect(HelloEvent, "6"); err != nil {
 		t.Fatal(err)
 	}
 	log.Println("HelloEvent")

@@ -5,6 +5,8 @@ import (
 	"reflect"
 )
 
+var Any = "autotest.Any"
+
 type EventID uint32
 
 type event struct {
@@ -33,16 +35,36 @@ func (e UnexpectedEventError) Error() string {
 	return fmt.Sprintf("Unexpected event: received {%d, %v} - expected {%d, %v}", e.receivedID, e.receivedArgs, e.expectedID, e.expectedArgs)
 }
 
+// Clear clears the event queue.
+func Clear() {
+L:
+	for {
+		select {
+		case <-events:
+		default:
+			break L
+		}
+	}
+}
+
 // Expect is called to ensure the next event is the given one.
-func Expect(id EventID, args ...string) error {
+func Expect(id EventID, args ...string) (EventID, []string, error) {
 	event, ok := <-events
 	if !ok {
-		return QueueClosedError{}
+		return 0, nil, QueueClosedError{}
 	}
-	if event.id != id || !reflect.DeepEqual(event.args, args) {
-		return UnexpectedEventError{id, args, event.id, event.args}
+	if args == nil {
+		args = make([]string, 0)
 	}
-	return nil
+	if event.id != id {
+		return 0, nil, UnexpectedEventError{id, args, event.id, event.args}
+	}
+	if len(args) == 0 || args[0] != Any {
+		if !reflect.DeepEqual(event.args, args) {
+			return 0, nil, UnexpectedEventError{id, args, event.id, event.args}
+		}
+	}
+	return event.id, event.args, nil
 }
 
 // Skip skips the next event.

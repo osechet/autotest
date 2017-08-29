@@ -68,7 +68,7 @@ func (p *Process) Start() (err error) {
 
 // Stop stops the process.
 func (p *Process) Stop() (err error) {
-	if p.cmd.Process != nil {
+	if p.cmd != nil && p.cmd.Process != nil {
 		err = p.cmd.Process.Kill()
 		p.cmd = nil
 		p.stdin = nil
